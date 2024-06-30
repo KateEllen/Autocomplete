@@ -1,0 +1,32 @@
+.autocomplete-container {
+    width: 300px;
+    margin: 0 auto;
+}
+
+.autocomplete-input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+}
+
+.search-options label {
+    margin-right: 10px;
+}
+
+.loading-indicator {
+    margin-top: 10px;
+}
+
+.suggestions-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.suggestion-item {
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+}
+
+.suggestion-item div {
+    font-size: 14px;
+}
