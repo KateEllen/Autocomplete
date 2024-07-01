@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
-import './Autocomplete.css';
+import "./Autocomplete.css";
 
 const Autocomplete = () => {
   const [query, setQuery] = useState("");
@@ -11,6 +11,7 @@ const Autocomplete = () => {
   const [lastSearch, setLastSearch] = useState("");
 
   const inputRef = useRef(null);
+  const containerRef = useRef(null);
 
   useEffect(() => {
     console.log("Component mounted");
@@ -20,6 +21,7 @@ const Autocomplete = () => {
     const inputValue = e.target.value;
     console.log("Input changed:", inputValue);
     setQuery(inputValue);
+    setIsTyping(true);
     debounceFetchSuggestions(inputValue, searchBy);
   };
 
@@ -33,7 +35,12 @@ const Autocomplete = () => {
     if (query.length > 0) {
       setLoading(true);
       try {
-        console.log("Fetching suggestions for query:", query, "searchBy:", searchBy);
+        console.log(
+          "Fetching suggestions for query:",
+          query,
+          "searchBy:",
+          searchBy
+        );
         const response = await axios.get(
           `http://127.0.0.1:5000/suggestions?q=${query}&search_by=${searchBy}`
         );
@@ -52,15 +59,19 @@ const Autocomplete = () => {
 
   const handleSuggestionClick = (suggestion) => {
     console.log("Suggestion clicked:", suggestion);
-    setQuery(suggestion.title); // Set the input value to the selected suggestion's title
+    if (searchBy === "title") {
+      setQuery(suggestion.title); // Set the input value to the selected suggestion's title
+    } else {
+      setQuery(suggestion.artist); // Set the input value to the selected suggestion's artist
+    }
     setSuggestions([]); // Clear suggestions list
+    setIsTyping(false);
   };
 
   const handleSearchByChange = (e) => {
     const searchByValue = e.target.value;
     console.log("Search by changed:", searchByValue);
     setSearchBy(searchByValue);
-    // Fetch suggestions again with the new searchBy value
     debounceFetchSuggestions(query, searchByValue);
   };
 
@@ -68,12 +79,18 @@ const Autocomplete = () => {
     setIsTyping(true);
   };
 
-  const handleBlur = () => {
-    setIsTyping(false);
+  const handleBlur = (e) => {
+    if (!containerRef.current.contains(e.relatedTarget)) {
+      setIsTyping(false);
+    }
   };
 
   return (
-    <div className={`autocomplete-container ${isTyping ? 'typing' : ''}`}>
+    <div
+      className="autocomplete-container"
+      ref={containerRef}
+      onBlur={handleBlur}
+    >
       <label htmlFor="search-input">Search for a song:</label>
       <input
         type="text"
@@ -81,12 +98,12 @@ const Autocomplete = () => {
         value={query}
         onChange={handleInputChange}
         onFocus={handleFocus}
-        onBlur={handleBlur}
         ref={inputRef}
+        autoComplete="off" // Disable autocomplete
         placeholder="Search for a song..."
         className="autocomplete-input"
       />
-      <div className="search-options">
+      <div className={`search-options ${isTyping ? "hidden" : ""}`}>
         <label>
           <input
             type="radio"
@@ -107,22 +124,34 @@ const Autocomplete = () => {
           Search by Artist
         </label>
       </div>
-      <div className="last-search">
-        Last Searched: {lastSearch}
-        </div>
 
       {loading && <div className="loading-indicator">Loading...</div>}
-      {suggestions.length > 0 && (
-        <ul className="suggestions-list">
+      {(isTyping || suggestions.length > 0) && (
+        <ul className={`suggestions-list ${isTyping ? "" : "hidden"}`}>
           {suggestions.map((suggestion, index) => (
-            <li key={index} className="suggestion-item" onClick={() => handleSuggestionClick(suggestion)}>
+            <li
+              key={index}
+              className="suggestion-item"
+              onClick={() => handleSuggestionClick(suggestion)}
+            >
               <div>
-                <strong>{suggestion.title}</strong> by {suggestion.artist} (Album: {suggestion.album})
+                {searchBy === "title" ? (
+                  <>
+                    <strong>{suggestion.title}</strong> by {suggestion.artist}{" "}
+                    (Album: {suggestion.album})
+                  </>
+                ) : (
+                  <>
+                    <strong>{suggestion.artist}</strong> - {suggestion.title}{" "}
+                    (Album: {suggestion.album})
+                  </>
+                )}
               </div>
             </li>
           ))}
         </ul>
       )}
+      <div className="last-search">Last Searched: {lastSearch}</div>
     </div>
   );
 };
