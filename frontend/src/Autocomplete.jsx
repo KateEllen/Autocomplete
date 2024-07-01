@@ -85,6 +85,22 @@ const Autocomplete = () => {
     }
   };
 
+  const getHighlightedText = (text, highlight, type) => {
+    const parts = text.split(new RegExp(`(${highlight})`, "gi"));
+    return (
+      <span>
+        {parts.map((part, index) =>
+          part.toLowerCase() === highlight.toLowerCase() ? (
+            <mark key={index}>{part}</mark>
+          ) : (
+            part
+          )
+        )}
+        {type === 'artist' ? ' ' : ' ' }
+      </span>
+    );
+  };
+
   return (
     <div
       className="autocomplete-container"
@@ -135,17 +151,27 @@ const Autocomplete = () => {
               onClick={() => handleSuggestionClick(suggestion)}
             >
               <div>
-                {searchBy === "title" ? (
-                  <>
-                    <strong>{suggestion.title}</strong> by {suggestion.artist}{" "}
-                    (Album: {suggestion.album})
-                  </>
-                ) : (
-                  <>
-                    <strong>{suggestion.artist}</strong> - {suggestion.title}{" "}
-                    (Album: {suggestion.album})
-                  </>
-                )}
+                <strong>{getHighlightedText(suggestion.title, query)}</strong>
+                by {suggestion.artist} (Album: {suggestion.album})
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {suggestions.length > 0 && searchBy === "artist" && (
+        <ul className={`suggestions-list ${isTyping ? "" : "hidden"}`}>
+          {suggestions.map((suggestion, index) => (
+            <li
+              key={index}
+              className="suggestion-item"
+              onClick={() => handleSuggestionClick(suggestion)}
+            >
+                <div>
+                    <strong>
+                        {getHighlightedText(suggestion.artist, query)}
+                        </strong>{" "}
+                        - {suggestion.title} (Album: {suggestion.album})
               </div>
             </li>
           ))}
