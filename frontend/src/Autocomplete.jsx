@@ -1,6 +1,6 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
-import "./Autocomplete.css";
+import './Autocomplete.css';
 
 const Autocomplete = () => {
   const [query, setQuery] = useState("");
@@ -8,20 +8,34 @@ const Autocomplete = () => {
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    console.log("Component mounted");
+  }, []);
+
   const handleInputChange = (e) => {
-    setQuery(e.target.value);
-    fetchSuggestions(e.target.value);
+    const inputValue = e.target.value;
+    console.log("Input changed:", inputValue);
+    setQuery(inputValue);
+    debounceFetchSuggestions(inputValue, searchBy);
   };
 
-  const fetchSuggestions = async (query) => {
+  const debounceFetchSuggestions = useRef(
+    debounce((value, searchBy) => {
+      fetchSuggestions(value, searchBy);
+    }, 300)
+  ).current;
+
+  const fetchSuggestions = async (query, searchBy) => {
     if (query.length > 0) {
       setLoading(true);
       try {
+        console.log("Fetching suggestions for query:", query, "searchBy:", searchBy);
         const response = await axios.get(
           `http://127.0.0.1:5000/suggestions?q=${query}&search_by=${searchBy}`
         );
-        console.log("Suggestions received:", response.data.results); // Log the response
-
+        console.log("Suggestions received:", response.data.results);
         setSuggestions(response.data.results);
       } catch (error) {
         console.error("Error fetching suggestions:", error);
@@ -33,6 +47,20 @@ const Autocomplete = () => {
     }
   };
 
+  const handleSuggestionClick = (suggestion) => {
+    console.log("Suggestion clicked:", suggestion);
+    setQuery(suggestion.title); // Set the input value to the selected suggestion's title
+    setSuggestions([]); // Clear suggestions list
+  };
+
+  const handleSearchByChange = (e) => {
+    const searchByValue = e.target.value;
+    console.log("Search by changed:", searchByValue);
+    setSearchBy(searchByValue);
+    // Fetch suggestions again with the new searchBy value
+    debounceFetchSuggestions(query, searchByValue);
+  };
+
   return (
     <div className="autocomplete-container">
       <label htmlFor="search-input">Search for a song:</label>
@@ -41,6 +69,7 @@ const Autocomplete = () => {
         id="search-input"
         value={query}
         onChange={handleInputChange}
+        ref={inputRef}
         placeholder="Search for a song..."
         className="autocomplete-input"
       />
@@ -50,7 +79,7 @@ const Autocomplete = () => {
             type="radio"
             value="title"
             checked={searchBy === "title"}
-            onChange={() => setSearchBy("title")}
+            onChange={handleSearchByChange}
           />
           Search by Title
         </label>
@@ -60,20 +89,18 @@ const Autocomplete = () => {
             type="radio"
             value="artist"
             checked={searchBy === "artist"}
-            onChange={() => setSearchBy("artist")}
+            onChange={handleSearchByChange}
           />
           Search by Artist
         </label>
       </div>
-      {loading && <div className="loading-indicator">Loading...</div>}{" "}
-      {/* Display text or spinner for loading state */}
+      {loading && <div className="loading-indicator">Loading...</div>}
       {suggestions.length > 0 && (
         <ul className="suggestions-list">
           {suggestions.map((suggestion, index) => (
-            <li key={index} className="suggestion-item">
+            <li key={index} className="suggestion-item" onClick={() => handleSuggestionClick(suggestion)}>
               <div>
-                <strong>{suggestion.title}</strong> by {suggestion.artist}{" "}
-                (Album: {suggestion.album})
+                <strong>{suggestion.title}</strong> by {suggestion.artist} (Album: {suggestion.album})
               </div>
             </li>
           ))}
@@ -84,3 +111,15 @@ const Autocomplete = () => {
 };
 
 export default Autocomplete;
+
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      func(...args);
+      clearTimeout(timeout);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}

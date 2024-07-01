@@ -20,11 +20,18 @@
 .suggestions-list {
     list-style-type: none;
     padding: 0;
+    border: 1px solid #ddd;
+    max-height: 150px;
 }
 
 .suggestion-item {
     padding: 8px;
     border-bottom: 1px solid #ddd;
+    cursor: pointer;
+}
+
+.suggestion-item:hover {
+    background-color: #f1f1f1;
 }
 
 .suggestion-item div {

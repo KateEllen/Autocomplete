@@ -3,7 +3,7 @@ from flask_cors import CORS
 import json
 
 app = Flask(__name__, static_folder='./build', static_url_path='')
-CORS(app)  
+CORS(app)
 
 # Load the JSON data from the file
 with open('./data/data.json', 'r') as file:
@@ -21,6 +21,7 @@ def get_suggestions():
 
     query = request.args.get('q', '').lower()
     search_by = request.args.get('search_by', 'title').lower()
+    print(f"Search query: {query}, search by: {search_by}")  # Debugging print
 
     if not query:
         return jsonify({'results': []})
