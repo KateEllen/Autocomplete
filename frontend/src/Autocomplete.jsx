@@ -7,6 +7,7 @@ const Autocomplete = () => {
   const [searchBy, setSearchBy] = useState("title");
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const [lastSearch, setLastSearch] = useState("");
 
   const inputRef = useRef(null);
@@ -63,14 +64,24 @@ const Autocomplete = () => {
     debounceFetchSuggestions(query, searchByValue);
   };
 
+  const handleFocus = () => {
+    setIsTyping(true);
+  };
+
+  const handleBlur = () => {
+    setIsTyping(false);
+  };
+
   return (
-    <div className="autocomplete-container">
+    <div className={`autocomplete-container ${isTyping ? 'typing' : ''}`}>
       <label htmlFor="search-input">Search for a song:</label>
       <input
         type="text"
         id="search-input"
         value={query}
         onChange={handleInputChange}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
         ref={inputRef}
         placeholder="Search for a song..."
         className="autocomplete-input"

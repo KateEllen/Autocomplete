@@ -8,6 +8,9 @@
     width: 100%;
     padding: 8px;
     margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .search-options label {
@@ -19,17 +22,18 @@
 }
 
 .suggestions-list {
-    position: absolute;
-    margin-top: -1px;
-    border: 1px solid rgba(0, 0, 0, 0.54);
-    padding: 4px 0;
-    width: 100%;
-    z-index: 1;
-    background: #fff;
-    margin: 0;
+    list-style-type: none;
     padding: 0;
-    list-style: none;
-    transition: none;
+    margin: 0;
+    border: 1px solid #ccc;
+    border-top: none;
+    max-height: 200px;
+    overflow-y: auto;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    position: absolute;
+    width: 100%;
+    z-index: 1000;
 }
 
 .suggestion-item {
@@ -47,6 +51,16 @@
 }
 
 .last-search {
-    margin-top: 64px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #f1f1f1;
+    padding: 10px;
     text-align: center;
+    border-top: 1px solid #ccc;
 }
+
+.typing .search-options {
+    display: none;
+  }
