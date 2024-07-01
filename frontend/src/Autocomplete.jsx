@@ -7,6 +7,7 @@ const Autocomplete = () => {
   const [searchBy, setSearchBy] = useState("title");
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [lastSearch, setLastSearch] = useState("");
 
   const inputRef = useRef(null);
 
@@ -37,6 +38,7 @@ const Autocomplete = () => {
         );
         console.log("Suggestions received:", response.data.results);
         setSuggestions(response.data.results);
+        setLastSearch(query);
       } catch (error) {
         console.error("Error fetching suggestions:", error);
       } finally {
@@ -94,6 +96,10 @@ const Autocomplete = () => {
           Search by Artist
         </label>
       </div>
+      <div className="last-search">
+        Last Searched: {lastSearch}
+        </div>
+
       {loading && <div className="loading-indicator">Loading...</div>}
       {suggestions.length > 0 && (
         <ul className="suggestions-list">
