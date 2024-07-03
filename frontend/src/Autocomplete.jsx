@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import axios from "axios";
+import debounce from "./utils/debounce";
 import "./Autocomplete.css";
 
 const Autocomplete = () => {
@@ -7,21 +8,19 @@ const Autocomplete = () => {
   const [searchBy, setSearchBy] = useState("title");
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [funFact, setFunFact] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [lastSearch, setLastSearch] = useState("");
-
+  const [activeSuggestion, setActiveSuggestion] = useState(0);
   const inputRef = useRef(null);
-  const containerRef = useRef(null);
-
-  useEffect(() => {
-    console.log("Component mounted");
-  }, []);
+  const inputValueRef = useRef("");
 
   const handleInputChange = (e) => {
     const inputValue = e.target.value;
-    console.log("Input changed:", inputValue);
+    inputValueRef.current = inputValue;
     setQuery(inputValue);
     setIsTyping(true);
+    setActiveSuggestion(0);
     debounceFetchSuggestions(inputValue, searchBy);
   };
 
@@ -35,18 +34,10 @@ const Autocomplete = () => {
     if (query.length > 0) {
       setLoading(true);
       try {
-        console.log(
-          "Fetching suggestions for query:",
-          query,
-          "searchBy:",
-          searchBy
-        );
         const response = await axios.get(
           `http://127.0.0.1:5000/suggestions?q=${query}&search_by=${searchBy}`
         );
-        console.log("Suggestions received:", response.data.results);
         setSuggestions(response.data.results);
-        setLastSearch(query);
       } catch (error) {
         console.error("Error fetching suggestions:", error);
       } finally {
@@ -57,20 +48,49 @@ const Autocomplete = () => {
     }
   };
 
-  const handleSuggestionClick = (suggestion) => {
-    console.log("Suggestion clicked:", suggestion);
-    if (searchBy === "title") {
-      setQuery(suggestion.title); // Set the input value to the selected suggestion's title
-    } else {
-      setQuery(suggestion.artist); // Set the input value to the selected suggestion's artist
-    }
-    setSuggestions([]); // Clear suggestions list
+  const handleSuggestionInteraction = (suggestion) => {
+    const selectedQuery =
+      searchBy === "title" ? suggestion.title : suggestion.artist;
+    setQuery(selectedQuery);
+    setLastSearch(selectedQuery);
+    setSuggestions([]);
     setIsTyping(false);
+    inputRef.current.focus();
+  };
+
+  const handleKeyDown = (e) => {
+    if (suggestions.length === 0) return;
+
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        setActiveSuggestion((prev) =>
+          prev === suggestions.length - 1 ? 0 : prev + 1
+        );
+
+        break;
+
+      case "ArrowUp":
+        e.preventDefault();
+        setActiveSuggestion((prev) =>
+          prev === 0 ? suggestions.length - 1 : prev - 1
+        );
+
+        break;
+
+      case "Enter":
+        e.preventDefault();
+        handleSuggestionInteraction(suggestions[activeSuggestion]);
+
+        break;
+
+      default:
+        break;
+    }
   };
 
   const handleSearchByChange = (e) => {
     const searchByValue = e.target.value;
-    console.log("Search by changed:", searchByValue);
     setSearchBy(searchByValue);
     debounceFetchSuggestions(query, searchByValue);
   };
@@ -79,14 +99,9 @@ const Autocomplete = () => {
     setIsTyping(true);
   };
 
-  const handleBlur = (e) => {
-    if (!containerRef.current.contains(e.relatedTarget)) {
-      setIsTyping(false);
-    }
-  };
-
-  const getHighlightedText = (text, highlight, type) => {
+  const getHighlightedText = (text, highlight) => {
     const parts = text.split(new RegExp(`(${highlight})`, "gi"));
+
     return (
       <span>
         {parts.map((part, index) =>
@@ -96,17 +111,27 @@ const Autocomplete = () => {
             part
           )
         )}
-        {type === 'artist' ? ' ' : ' ' }
       </span>
     );
   };
 
+  const handleButtonClick = async () => {
+    try {
+      const response = await axios.post("http://127.0.0.1:5000/funfact", {
+        query: inputValueRef.current,
+        context: "Generate a fun fact about music related to the query",
+      });
+
+      if (response.data.fun_fact) {
+        setFunFact(response.data.fun_fact);
+      }
+    } catch (error) {
+      console.error("Error sending request to backend:", error);
+    }
+  };
+
   return (
-    <div
-      className="autocomplete-container"
-      ref={containerRef}
-      onBlur={handleBlur}
-    >
+    <div className="autocomplete-container">
       <label htmlFor="search-input">Search for a song:</label>
       <input
         type="text"
@@ -114,12 +139,40 @@ const Autocomplete = () => {
         value={query}
         onChange={handleInputChange}
         onFocus={handleFocus}
-        ref={inputRef}
-        autoComplete="off" // Disable autocomplete
+        onKeyDown={handleKeyDown}
+        autoComplete="off"
         placeholder="Search for a song..."
         className="autocomplete-input"
+        ref={inputRef}
+        aria-autocomplete="list"
+        aria-controls="suggestions-list"
+        aria-expanded={isTyping && suggestions.length > 0}
       />
-      <div className={`search-options ${isTyping ? "hidden" : ""}`}>
+      {loading && <div className="loading-indicator">Loading...</div>}
+      {isTyping && suggestions.length > 0 && (
+        <ul className="suggestions-list">
+          {suggestions.map((suggestion, index) => (
+            <li
+              key={index}
+              className={`suggestion-item ${
+                index === activeSuggestion ? "active" : ""
+              }`}
+              onClick={() => {
+                handleSuggestionInteraction(suggestion);
+              }}
+              role="option"
+              aria-selected={index === activeSuggestion}
+            >
+              <div>
+                <strong>{getHighlightedText(suggestion.title, query)}</strong>{" "}
+                by {suggestion.artist} (Album: {suggestion.album})
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <div className={`search-options`}>
         <label>
           <input
             type="radio"
@@ -141,57 +194,19 @@ const Autocomplete = () => {
         </label>
       </div>
 
-      {loading && <div className="loading-indicator">Loading...</div>}
-      {(isTyping || suggestions.length > 0) && (
-        <ul className={`suggestions-list ${isTyping ? "" : "hidden"}`}>
-          {suggestions.map((suggestion, index) => (
-            <li
-              key={index}
-              className="suggestion-item"
-              onClick={() => handleSuggestionClick(suggestion)}
-            >
-              <div>
-                <strong>{getHighlightedText(suggestion.title, query)}</strong>
-                by {suggestion.artist} (Album: {suggestion.album})
-              </div>
-            </li>
-          ))}
-        </ul>
+      {lastSearch && (
+        <div className="last-search">Last Selected: {lastSearch}</div>
       )}
-
-      {suggestions.length > 0 && searchBy === "artist" && (
-        <ul className={`suggestions-list ${isTyping ? "" : "hidden"}`}>
-          {suggestions.map((suggestion, index) => (
-            <li
-              key={index}
-              className="suggestion-item"
-              onClick={() => handleSuggestionClick(suggestion)}
-            >
-                <div>
-                    <strong>
-                        {getHighlightedText(suggestion.artist, query)}
-                        </strong>{" "}
-                        - {suggestion.title} (Album: {suggestion.album})
-              </div>
-            </li>
-          ))}
-        </ul>
+      <button className="fun-fact-button" onClick={handleButtonClick}>
+        Get A Fun Music Fact!
+      </button>
+      {funFact && (
+        <div className="fun-fact">
+          <p>{funFact}</p>
+        </div>
       )}
-      <div className="last-search">Last Searched: {lastSearch}</div>
     </div>
   );
 };
 
 export default Autocomplete;
-
-function debounce(func, wait) {
-  let timeout;
-  return function executedFunction(...args) {
-    const later = () => {
-      func(...args);
-      clearTimeout(timeout);
-    };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
-}
