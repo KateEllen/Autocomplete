@@ -1,6 +1,16 @@
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 import json
+import openai
+from dotenv import load_dotenv
+import os
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Access environment variables
+api_key = os.getenv('OPENAI_API_KEY')
+
 
 app = Flask(__name__, static_folder='./build', static_url_path='')
 CORS(app)
@@ -48,6 +58,34 @@ def get_suggestions():
 @app.route('/')
 def serve():
     return send_from_directory(app.static_folder, 'index.html')
+
+# Endpoint to fetch fun facts using OpenAI API
+
+@app.route('/funfact', methods=['POST'])
+def get_fun_fact():
+    client = openai.OpenAI(api_key=api_key)
+    data = request.get_json()
+    query = data.get('query', '')
+    context = data.get('context', '')
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": f"{query}: {context}"}],
+            max_tokens=100,
+        )
+        
+        if response.choices and response.choices[0].message and response.choices[0].message.content:
+            fun_fact = response.choices[0].message.content
+            print("Generated Fun Fact:", fun_fact)
+            return jsonify({'fun_fact': fun_fact})
+        else:
+            return jsonify({'error': 'Invalid response from OpenAI'}), 500
+
+    except Exception as e:
+        print("Error from OpenAI API:", e)
+        return jsonify({'error': str(e)}), 500
+
 
 
 if __name__ == '__main__':
