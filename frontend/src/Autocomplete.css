@@ -59,15 +59,18 @@
     border-bottom: 1px solid #eee;
     cursor: pointer;
     text-align: left;
-    transition: background-color 0.3s;
+    transition: background-color 0.3s, color 0.3s;
+    color: #333;
 }
 
 .suggestion-item:last-child {
     border-bottom: none;
 }
 
-.suggestion-item:hover, .suggestion-item.active {
-    background-color: #f9f9f9;
+.suggestion-item:hover,
+.suggestion-item.active {
+    background-color: #e9ecef;
+    color: #000;
 }
 
 .suggestion-item div {

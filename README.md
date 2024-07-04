@@ -86,6 +86,8 @@ npm install axios
 ```
 
 ## How to run locally
+
+** To use OPENAI you will need your own API key. This should be added to a .env file and added to .gitignore file for security. **
 Step 1 - Open two terminals
 Step 2 - Install the python requirements by typing: ** pip install -r requirements.txt ** into the first terminal
 Step 3 - To run the backend type 'python app.py' in the first terminal
