@@ -1,21 +1,31 @@
 .autocomplete-container {
     position: relative;
-    width: 300px;
-    margin: 0 auto;
+    width: 100%;
+    max-width: 400px;
+    margin: 20px auto;
+    font-family: Arial, sans-serif;
 }
 
 .autocomplete-input {
     width: 100%;
-    padding: 8px;
+    padding: 10px;
     margin-bottom: 10px;
-    border: 1px solid #ccc;
+    border: 1px solid #ddd;
     border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.autocomplete-input:focus {
+    border-color: #007bff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .search-options label {
     margin-right: 10px;
+    font-size: 14px;
+    cursor: pointer;
 }
 
 .search-options.hidden {
@@ -24,32 +34,40 @@
 
 .loading-indicator {
     margin-top: 10px;
+    font-size: 14px;
+    color: #666;
 }
 
 .suggestions-list {
     list-style-type: none;
     padding: 0;
     margin: 0;
-    border: 1px solid #ccc;
+    border: 1px solid #ddd;
     border-top: none;
     max-height: 200px;
     overflow-y: auto;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     background-color: #fff;
     position: absolute;
     width: 100%;
     z-index: 1000;
+    border-radius: 0 0 4px 4px;
 }
 
 .suggestion-item {
-    padding: 8px;
-    border-bottom: 1px solid #ddd;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
     cursor: pointer;
     text-align: left;
+    transition: background-color 0.3s;
 }
 
-.suggestion-item:hover {
-    background-color: #f1f1f1;
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-item:hover, .suggestion-item.active {
+    background-color: #f9f9f9;
 }
 
 .suggestion-item div {
@@ -61,28 +79,25 @@
     bottom: 0;
     left: 0;
     width: 100%;
-    background-color: #f1f1f1;
+    background-color: #f8f8f8;
     padding: 10px;
     text-align: center;
-    border-top: 1px solid #ccc;
+    border-top: 1px solid #ddd;
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+    font-size: 14px;
 }
 
 .hidden {
     display: none;
 }
 
-/* mark {
-    background-color: #ff0;
-    font-weight: bold;
-    color: inherit;
-    padding: 0 2px;
-  } */
-
 .fun-fact {
     margin-top: 10px;
     padding: 10px;
-    border: 1px solid #ccc;
+    border: 1px solid #ddd;
     border-radius: 4px;
+    background-color: #f8f8f8;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .fun-fact-button {
@@ -93,8 +108,16 @@
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    transition: background-color 0.3s;
 }
 
-.suggestion-item.active {
-    background-color: #f1f1f1;
-  }
+.fun-fact-button:hover {
+    background-color: #0056b3;
+}
+
+.mark {
+    background-color: #ffeb3b;
+    font-weight: bold;
+    color: inherit;
+    padding: 0 2px;
+}
