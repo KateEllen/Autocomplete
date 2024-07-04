@@ -65,28 +65,39 @@ const Autocomplete = () => {
     switch (e.key) {
       case "ArrowDown":
         e.preventDefault();
-        setActiveSuggestion((prev) =>
-          prev === suggestions.length - 1 ? 0 : prev + 1
-        );
-
+        setActiveSuggestion((prev) => {
+          const newIndex = prev === suggestions.length - 1 ? 0 : prev + 1;
+          scrollIntoView(newIndex);
+          return newIndex;
+        });
         break;
 
       case "ArrowUp":
         e.preventDefault();
-        setActiveSuggestion((prev) =>
-          prev === 0 ? suggestions.length - 1 : prev - 1
-        );
-
+        setActiveSuggestion((prev) => {
+          const newIndex = prev === 0 ? suggestions.length - 1 : prev - 1;
+          scrollIntoView(newIndex);
+          return newIndex;
+        });
         break;
 
       case "Enter":
         e.preventDefault();
         handleSuggestionInteraction(suggestions[activeSuggestion]);
-
         break;
 
       default:
         break;
+    }
+  };
+
+  const scrollIntoView = (index) => {
+    const suggestionList = document.getElementById("suggestions-list");
+    if (suggestionList) {
+      const activeItem = suggestionList.children[index];
+      if (activeItem) {
+        activeItem.scrollIntoView({ block: "nearest" });
+      }
     }
   };
 
@@ -151,7 +162,7 @@ const Autocomplete = () => {
       />
       {loading && <div className="loading-indicator">Loading...</div>}
       {isTyping && suggestions.length > 0 && (
-        <ul className="suggestions-list">
+        <ul className="suggestions-list" id="suggestions-list">
           {suggestions.map((suggestion, index) => (
             <li
               key={index}
@@ -165,8 +176,20 @@ const Autocomplete = () => {
               aria-selected={index === activeSuggestion}
             >
               <div>
-                <strong>{getHighlightedText(suggestion.title, query)}</strong>{" "}
-                by {suggestion.artist} (Album: {suggestion.album})
+                <strong>
+                  {getHighlightedText(
+                    suggestion.title,
+
+                    searchBy === "title" ? query : ""
+                  )}
+                </strong>{" "}
+                by{" "}
+                {getHighlightedText(
+                  suggestion.artist,
+
+                  searchBy === "artist" ? query : ""
+                )}{" "}
+                (Album: {suggestion.album})
               </div>
             </li>
           ))}
