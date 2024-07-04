@@ -34,7 +34,6 @@ There are added features to increase user experience, such as radio buttons to s
 - [VSCode](https://code.visualstudio.com/) - used as IDE for the project.
 - [Git](https://git-scm.com/) - used for version control.
 - [Github](https://github.com/) - used to host repository and to generate the live website.
-- [Prettier](https://prettier.io/) - Code formatter.
 - [Chrome Developer Tools](https://developers.google.com/web/tools/chrome-devtools) - used to test and optimize the site.
 
 ### JS Tools Installed
@@ -65,6 +64,12 @@ npm install react
 
 ```
 npm install axios
+```
+
+#### **Vite**
+
+```
+npm create vite@latest
 ```
 
 ## How to run locally
