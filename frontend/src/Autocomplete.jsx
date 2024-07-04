@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import debounce from "./utils/debounce";
 import "./Autocomplete.css";
@@ -14,6 +14,7 @@ const Autocomplete = () => {
   const [activeSuggestion, setActiveSuggestion] = useState(0);
   const inputRef = useRef(null);
   const inputValueRef = useRef("");
+  const containerRef = useRef(null);
 
   const handleInputChange = (e) => {
     const inputValue = e.target.value;
@@ -23,6 +24,16 @@ const Autocomplete = () => {
     setFunFact("");
     setActiveSuggestion(0);
     debounceFetchSuggestions(inputValue, searchBy);
+  };
+
+  const handleInputBlur = () => {
+    if (!containerRef.current.contains(document.activeElement)) {
+      setQuery("");
+
+      setIsTyping(false);
+
+      setSuggestions([]);
+    }
   };
 
   const debounceFetchSuggestions = useRef(
@@ -142,8 +153,29 @@ const Autocomplete = () => {
     }
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target)
+      ) {
+        setQuery("");
+
+        setIsTyping(false);
+
+        setSuggestions([]);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [containerRef]);
+
   return (
-    <div className="autocomplete-container">
+    <div className="autocomplete-container" ref={containerRef}>
       <label htmlFor="search-input">Search for a song:</label>
       <input
         type="text"
@@ -219,7 +251,7 @@ const Autocomplete = () => {
       </div>
 
       {lastSearch && (
-        <div className="last-search">Last Selected: {lastSearch}</div>
+        <div className="last-search">Last Search: {lastSearch}</div>
       )}
       <button className="fun-fact-button" onClick={handleButtonClick}>
         Get A Fun Music Fact!
