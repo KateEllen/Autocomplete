@@ -47,24 +47,6 @@ At the root of your project
 npm init
 ```
 
-#### **Prettier**
-
-Available only in development.
-
-```
-npm install -D prettier
-```
-
-Create the .prettierrc file.
-
-#### **ESLint**
-
-```
-npm install -D eslint eslint-config-prettier
-```
-
-All the configuration can be found in the .eslintrc.json. file
-
 #### **Git**
 
 ```
