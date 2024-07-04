@@ -20,6 +20,7 @@ const Autocomplete = () => {
     inputValueRef.current = inputValue;
     setQuery(inputValue);
     setIsTyping(true);
+    setFunFact("");
     setActiveSuggestion(0);
     debounceFetchSuggestions(inputValue, searchBy);
   };
